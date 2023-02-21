@@ -16,25 +16,36 @@ def is_sponsored(frame):
     return False
 
 def skip_sponsored(video_path):
-    
     cap = cv2.VideoCapture(video_path)
 
-    frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    frameWidth = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    frameHeight = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    frameRate = cap.get(cv2.CAP_PROP_FPS)
+    allFrames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    frame_rate = cap.get(cv2.CAP_PROP_FPS)
-    out = cv2.VideoWriter('Desktop/output.mp4', cv2.VideoWriter_fourcc(*'mp4v'), frame_rate, (frame_width, frame_height))
+    out = cv2.VideoWriter('Desktop/outputt.mp4', cv2.VideoWriter_fourcc(*'mp4v'), frameRate, (frameWidth, frameHeight))
 
-    while cap.isOpened():
+    sponsorStart = None
+    sponsorEnd = None
+
+    for i in range(0, allFrames, 10):
+        cap.set(cv2.CAP_PROP_POS_FRAMES, i)
         ret, frame = cap.read()
         if not ret:
             break
+        if is_sponsored(frame):
+            if sponsorStart is None:
+                sponsorStart = i
+            sponsorEnd = i
+    cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
-        if not is_sponsored(frame):
+    for i in range(allFrames):
+        ret, frame = cap.read()
+        if not ret:
+            break
+        if i < sponsorStart or i > sponsorEnd:
             out.write(frame)
-
     cap.release()
     out.release()
 
-skip_sponsored("Desktop/nv.mp4")
-
+skip_sponsored("Desktop/trimmed_input.mp4")
