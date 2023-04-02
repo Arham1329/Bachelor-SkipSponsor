@@ -29,7 +29,6 @@ def is_sponsored(frame):
     keywords = ["sponsored", "promoted", "free trial", "revolut", "sponsor", "with code", "code:", "discovery+"]
     for keyword in keywords:
         if keyword in text.lower():
-            print(keyword)
             return True
 
     return False
@@ -68,15 +67,13 @@ def skip_sponsored(yt_id):
    """
     cap = cap_from_youtube(yt_id)
 
-    frameWidth = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    frameHeight = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     frameRate = cap.get(cv2.CAP_PROP_FPS)
     allFrames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
     sponsorStart = None
     sponsorEnd = None
 
-    for i in range(0, allFrames, 20):
+    for i in range(0, allFrames, 10):
         cap.set(cv2.CAP_PROP_POS_FRAMES, i)
         ret, frame = cap.read()
         if not ret:
@@ -85,9 +82,12 @@ def skip_sponsored(yt_id):
             if sponsorStart is None:
                 sponsorStart = i
             sponsorEnd = i
-            print(f"Sponsored segment from {sponsorStart/frameRate:.2f}s to {sponsorEnd/frameRate:.2f}s")
-    cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
-
+    
+    sponsorStartMin, sponsorStartSec = divmod(sponsorStart/frameRate, 60)
+    sponsorEndMin, sponsorEndSec = divmod(sponsorEnd/frameRate, 60)       
+    print(f"Sponsored segment from {sponsorStartMin:.0f}m {sponsorStartSec:.0f}s to {sponsorEndMin:.0f}m {sponsorEndSec:.0f}s")
+    
+    # Functionality to remove the sponsored segments 
     # for i in range(allFrames):
     #     ret, frame = cap.read()
     #     if not ret:
